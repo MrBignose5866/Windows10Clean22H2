@@ -5,3 +5,4 @@
 
  # Changes
  - All .appx UWP Microsoft Store Packages Removed
+ - Windows Media Player Disabled
