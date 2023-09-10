@@ -1,6 +1,7 @@
 # Win10CleanUp
 
 # Removing AppX Packages
+Write-Host "::Removing All Appx UWP Packages"
 $Apps = @(
 "Microsoft.3DBuilder"
 "Microsoft.BingFinance"
@@ -36,7 +37,9 @@ $Apps = @(
 "Microsoft.XboxGamingOverlay" 
 "Microsoft.Xbox.TCUI" 
 "Microsoft.XboxSpeechToTextOverlay" 
-"Microsoft.XboxGameCallableUI" 
+"Microsoft.XboxGameCallableUI"
+"Microsoft.XboxIdentityProvider"
+"Microsoft.549981C3F5F10"
 "Microsoft.MixedReality.Portal" 
 "Microsoft.MicrosoftPowerBIForWindows" 
 "Microsoft.Microsoft3DViewer" 
@@ -50,11 +53,13 @@ $Apps = @(
 "Microsoft.Windows.CloudExperienceHost" 
 "Microsoft.Windows.ContentDeliveryManager" 
 "Microsoft.Windows.PeopleExperienceHost" 
-"Microsoft.OneConnect" 
+"Microsoft.OneConnect"
+"Microsoft.Paint"
 "Microsoft.MSPaint" 
 "Microsoft.BingFoodAndDrink" 
 "Microsoft.BingHealthAndFitness" 
-"Microsoft.BingTravel" 
+"Microsoft.BingTravel"
+"Microsoft.GamingApp"
 "Microsoft.WindowsReadingList" 
 "2FE3CB00.PicsArt-PhotoStudio" 
 "46928bounde.EclipseManager" 
@@ -67,7 +72,11 @@ $Apps = @(
 "A278AB0D.DisneyMagicKingdoms" 
 "A278AB0D.MarchofEmpires" 
 "ActiproSoftwareLLC.562882FEEB491" 
-"CAF9E577.Plex" 
+"CAF9E577.Plex"
+"Microsoft.Todos"
+"MicrosoftCorporationII.MicrosoftFamily"
+"MicrosoftCorporationII.QuickAssist"
+"Microsoft.WindowsTerminal"
 "ClearChannelRadioDigital.iHeartRadio" 
 "D52A8D61.FarmVille2CountryEscape" 
 "D5EA27B7.Duolingo-LearnLanguagesforFree" 
@@ -100,39 +109,58 @@ $Apps = @(
 "Microsoft.NetworkSpeedTest" 
 "Microsoft.Windows.Cortana" 
 "Microsoft.MicrosoftEdge" 
+"Clipchamp.Clipchamp"
+"Microsoft.Windows.ContentDeliveryManager"
+"Microsoft.PowerAutomate"
 "Microsoft.WindowsStore"
 )
 
 ForEach ($App in $Apps){
 Get-AppxPackage $App | Remove-AppxPackage
+Get-AppxPackage -AllUsers $App | Remove-AppxPackage
+Get-AppxProvisionedPackage -online | where-object {$_.packagename -like $App} | Remove-AppxProvisionedPackage -online
 }
 
 # Hide Search Box
+Write-Host "::Hiding Search Box"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0
 
 # Hide Task View Button
+Write-Host "::Hiding Task View Button"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type DWord -Value 0
 
 # Hide News & Interests
+Write-Host "::Hiding News & Interests"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Type DWord -Value 2
 
 # Change Default Windows Explorer View To This PC
+Write-Host "::Changing File Explorer View to This PC"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
 
 # Show File Extensions
+Write-Host "::Showing File Extensions"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Type DWord -Value 0
 
 # Hide Cortana Button
+Write-Host "::Hiding Cortana Button"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowCortanaButton" -Type DWord -Value 0
 
 # Hide Teams Button
+Write-Host "::Hiding Teams Button"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -Type DWord -Value 0
 
 # Set Taskbar To Left
+Write-Host "::Setting Taskbar Position To Left"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Type DWord -Value 0
 
-# Disable Action Center
+# Hiding Action Center
+Write-Host "::Hiding Action Center"
 Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Type DWord -Value 1
 
 # Disable Windows Media Player
+Write-Host "::Disabling Windows Media Player"
 Disable-WindowsOptionalFeature -Online -FeatureName "WindowsMediaPlayer"
+
+# Disable Content Delivery Manager
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 0
+
