@@ -4,5 +4,5 @@
  **Windows10Clean22H2** also restores the simple and clean feel of **Windows 7**.
 
  # Changes
- - All .appx UWP Microsoft Store Packages Removed
+ - All .appx UWP Microsoft Store Packages Removed (Also The Microsoft Store Itself Was Removed)
  - Windows Media Player Disabled
