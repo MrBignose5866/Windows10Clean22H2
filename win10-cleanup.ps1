@@ -101,7 +101,6 @@ $Apps = @(
 "Microsoft.Windows.Cortana" 
 "Microsoft.MicrosoftEdge" 
 "Microsoft.WindowsStore"
-
 )
 
 ForEach ($App in $Apps){
