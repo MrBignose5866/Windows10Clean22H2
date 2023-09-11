@@ -1,4 +1,3 @@
-Set-Location ".\sources"
 # Win10CleanUp
 
 # Removing AppX Packages
@@ -164,3 +163,31 @@ Disable-WindowsOptionalFeature -Online -FeatureName "WindowsMediaPlayer"
 
 # Disable Content Delivery Manager
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 0
+
+# Install Old Calculator
+New-Item -Path "C:\Windows\System32" -Name "Calculator" -ItemType Directory
+New-Item -Path "C:\Windows\System32\Calculator" -Name "en-US" -ItemType Directory
+Set-Location ..
+Set-Location ".\old-programs"
+Set-Location ".\Calculator"
+Set-Location ".\en-US"
+Copy-Item -Path ".\calc1.exe.mui" -Destination "C:\Windows\System32\Calculator\en-US"
+Set-Location ..
+Copy-Item -Path ".\calc1.exe" -Destination "C:\Windows\System32\Calculator"
+Copy-Item -Path ".\unins000.dat" -Destination "C:\Windows\System32\Calculator"
+Copy-Item -Path ".\unins000.exe" -Destination "C:\Windows\System32\Calculator"
+
+# Install Old Sticky Notes
+New-Item -Path "C:\Windows\System32" -Name "StickyNotes" -ItemType Directory
+New-Item -Path "C:\Windows\System32\StickyNotes" -Name "en-US" -ItemType Directory
+Set-Location ..
+Set-Location ".\old-programs"
+Set-Location ".\StickyNotes"
+Set-Location ".\en-US"
+Copy-Item -Path ".\dui70.dll.mui" -Destination "C:\Windows\System32\StickyNotes\en-US"
+Copy-Item -Path ".\StikyNot.exe.mui" -Destination "C:\Windows\System32\StickyNotes\en-US"
+Set-Location ..
+Copy-Item -Path ".\dui70.dll" -Destination "C:\Windows\System32\StickyNotes"
+Copy-Item -Path ".\StikyNot.exe" -Destination "C:\Windows\System32\StickyNotes"
+Copy-Item -Path ".\unins000.dat" -Destination "C:\Windows\System32\StickyNotes"
+Copy-Item -Path ".\unins000.exe" -Destination "C:\Windows\System32\StickyNotes"
