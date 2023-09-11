@@ -149,10 +149,6 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer
 Write-Host "::Hiding Teams Button"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -Type DWord -Value 0
 
-# Set Taskbar To Left
-Write-Host "::Setting Taskbar Position To Left"
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Type DWord -Value 0
-
 # Hiding Action Center
 Write-Host "::Hiding Action Center"
 Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Type DWord -Value 1
@@ -164,29 +160,68 @@ Disable-WindowsOptionalFeature -Online -FeatureName "WindowsMediaPlayer"
 # Disable Content Delivery Manager
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 0
 
-# Install Old Calculator
-New-Item -Path "C:\Windows\System32" -Name "Calculator" -ItemType Directory
-New-Item -Path "C:\Windows\System32\Calculator" -Name "en-US" -ItemType Directory
-Set-Location ..
-Set-Location ".\old-programs"
-Set-Location ".\Calculator"
-Set-Location ".\en-US"
-Copy-Item -Path ".\calc1.exe.mui" -Destination "C:\Windows\System32\Calculator\en-US"
-Set-Location ..
-Copy-Item -Path ".\calc1.exe" -Destination "C:\Windows\System32\Calculator"
-Copy-Item -Path ".\unins000.dat" -Destination "C:\Windows\System32\Calculator"
-Copy-Item -Path ".\unins000.exe" -Destination "C:\Windows\System32\Calculator"
+# Disable Meet Now
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Type DWord -Value 1
 
-# Install Old Sticky Notes
-New-Item -Path "C:\Windows\System32" -Name "StickyNotes" -ItemType Directory
-New-Item -Path "C:\Windows\System32\StickyNotes" -Name "en-US" -ItemType Directory
-Set-Location ..
-Set-Location ".\StickyNotes"
-Set-Location ".\en-US"
-Copy-Item -Path ".\dui70.dll.mui" -Destination "C:\Windows\System32\StickyNotes\en-US"
-Copy-Item -Path ".\StikyNot.exe.mui" -Destination "C:\Windows\System32\StickyNotes\en-US"
-Set-Location ..
-Copy-Item -Path ".\dui70.dll" -Destination "C:\Windows\System32\StickyNotes"
-Copy-Item -Path ".\StikyNot.exe" -Destination "C:\Windows\System32\StickyNotes"
-Copy-Item -Path ".\unins000.dat" -Destination "C:\Windows\System32\StickyNotes"
-Copy-Item -Path ".\unins000.exe" -Destination "C:\Windows\System32\StickyNotes"
+# Restart Windows Explorer
+taskkill /f /im explorer.exe
+start explorer.exe
+
+# Remove OneDrive
+Write-Output "Kill OneDrive process"
+taskkill.exe /F /IM "OneDrive.exe"
+taskkill.exe /F /IM "explorer.exe"
+
+Write-Output "Remove OneDrive"
+if (Test-Path "$env:systemroot\System32\OneDriveSetup.exe") {
+    & "$env:systemroot\System32\OneDriveSetup.exe" /uninstall
+}
+if (Test-Path "$env:systemroot\SysWOW64\OneDriveSetup.exe") {
+    & "$env:systemroot\SysWOW64\OneDriveSetup.exe" /uninstall
+}
+
+Write-Output "Removing OneDrive leftovers"
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:localappdata\Microsoft\OneDrive"
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:programdata\Microsoft OneDrive"
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:systemdrive\OneDriveTemp"
+# check if directory is empty before removing:
+If ((Get-ChildItem "$env:userprofile\OneDrive" -Recurse | Measure-Object).Count -eq 0) {
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:userprofile\OneDrive"
+}
+
+Write-Output "Disable OneDrive via Group Policies"
+New-FolderForced -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive"
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 1
+
+Write-Output "Remove Onedrive from explorer sidebar"
+New-PSDrive -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" -Name "HKCR"
+mkdir -Force "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
+Set-ItemProperty -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" "System.IsPinnedToNameSpaceTree" 0
+mkdir -Force "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
+Set-ItemProperty -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" "System.IsPinnedToNameSpaceTree" 0
+Remove-PSDrive "HKCR"
+
+# Thank you Matthew Israelsson
+Write-Output "Removing run hook for new users"
+reg load "hku\Default" "C:\Users\Default\NTUSER.DAT"
+reg delete "HKEY_USERS\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveSetup" /f
+reg unload "hku\Default"
+
+Write-Output "Removing startmenu entry"
+Remove-Item -Force -ErrorAction SilentlyContinue "$env:userprofile\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk"
+
+Write-Output "Removing scheduled task"
+Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
+
+Write-Output "Restarting explorer"
+Start-Process "explorer.exe"
+
+Write-Output "Waiting for explorer to complete loading"
+Start-Sleep 10
+
+# Remove 3D Objects Folder From User Profile
+Remove-Item "$env:USERPROFILE\3DObjects"
+
+# Remove 3D Objects Folder LeftOvers
+Remove-ItemProperty -Path "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
+
