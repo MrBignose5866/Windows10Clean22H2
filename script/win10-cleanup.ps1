@@ -181,7 +181,6 @@ Copy-Item -Path ".\unins000.exe" -Destination "C:\Windows\System32\Calculator"
 New-Item -Path "C:\Windows\System32" -Name "StickyNotes" -ItemType Directory
 New-Item -Path "C:\Windows\System32\StickyNotes" -Name "en-US" -ItemType Directory
 Set-Location ..
-Set-Location ".\old-programs"
 Set-Location ".\StickyNotes"
 Set-Location ".\en-US"
 Copy-Item -Path ".\dui70.dll.mui" -Destination "C:\Windows\System32\StickyNotes\en-US"
