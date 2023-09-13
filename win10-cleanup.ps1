@@ -113,6 +113,7 @@ $Apps = @(
 "Microsoft.Windows.ContentDeliveryManager"
 "Microsoft.PowerAutomate"
 "Microsoft.WindowsStore"
+"Microsoft.MicrosoftEdgeDevToolsClient"
 )
 
 ForEach ($App in $Apps){
@@ -165,7 +166,7 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies
 
 # Restart Windows Explorer
 taskkill /f /im explorer.exe
-start explorer.exe
+Start-Process explorer.exe
 
 # Remove OneDrive
 Write-Output "Kill OneDrive process"
@@ -225,3 +226,9 @@ Remove-Item "$env:USERPROFILE\3DObjects"
 # Remove 3D Objects Folder LeftOvers
 Remove-ItemProperty -Path "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
 
+# Disable People Icon on Taskbar
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Name "PeopleBand" -Type DWord -Value 0
+
+# Restart Windows Explorer
+taskkill /f /im explorer.exe
+Start-Process explorer.exe
